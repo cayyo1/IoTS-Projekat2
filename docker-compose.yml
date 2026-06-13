@@ -17,6 +17,16 @@ services:
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
       - ./db/seed.sql:/docker-entrypoint-initdb.d/seed.sql
       - ./data:/data
+  mqtt:
+    image: eclipse-mosquitto
+    container_name: iot-mqtt
+    restart: always
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mqtt-data:/mosquitto/data
     
 volumes:
   postgres-data:
+  mqtt-data:
