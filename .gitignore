@@ -1,0 +1,102 @@
+# =========================
+# GENERAL
+# =========================
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# =========================
+# NODE.JS / NESTJS
+# =========================
+node_modules/
+dist/
+coverage/
+
+# NestJS
+.nestcli.json
+
+# TypeScript
+*.tsbuildinfo
+
+# Package managers
+.pnpm-store/
+.yarn/
+package-lock.json
+
+# =========================
+# ASP.NET CORE / .NET
+# =========================
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider / VS
+.idea/
+.vs/
+
+# Resharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+
+# Publish output
+publish/
+
+# =========================
+# DOCKER
+# =========================
+docker-data/
+postgres-data/
+
+# Docker override files
+docker-compose.override.yml
+
+*.dump
+
+# =========================
+# TESTING / K6
+# =========================
+k6-results/
+reports/
+
+# Coverage
+coverage/
+*.lcov
+
+# =========================
+# OS / EDITORS
+# =========================
+.vscode/
+.idea/
+
+# Mac
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+
+# Windows
+Desktop.ini
+
+# =========================
+# TEMP FILES
+# =========================
+tmp/
+temp/
+*.tmp
