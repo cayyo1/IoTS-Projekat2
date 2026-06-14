@@ -1,56 +1,116 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import * as mqtt from 'mqtt';
+import { Kafka, Producer } from 'kafkajs';
+
+interface SensorPayload {
+  deviceId: string;
+  timestamp: number;
+  co: number;
+  humidity: number;
+  light: boolean;
+  smoke: number;
+  temperature: number;
+}
 
 @Injectable()
 export class IngestionService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(IngestionService.name);
-  private client!: mqtt.MqttClient;
+
+  private readonly BROKER_TYPE: string = 'kafka'; // 'mqtt' ili 'kafka'
 
   private readonly DEVICE_COUNT = 3;
   private readonly INTERVAL_MS = 2000;
-  private readonly MQTT_BROKER = 'mqtt://localhost:1883';
+
+  private readonly MQTT_BROKER = process.env.MQTT_BROKER || 'mqtt://localhost:1883';
+  private readonly KAFKA_BROKER = process.env.KAFKA_BROKER || 'localhost:9093';
   private readonly TOPIC = 'iot/sensors';
 
   private readonly RANGES = {
-    co:          { min: 0.00,  max: 0.02  },
-    humidity:    { min: 0.0,   max: 100.0 },
-    smoke:       { min: 0.00,  max: 0.06  },
-    temperature: { min: 0.0,   max: 100.0 },
+    co:          { min: 0.00, max: 0.02  },
+    humidity:    { min: 0.0,  max: 100.0 },
+    smoke:       { min: 0.00, max: 0.06  },
+    temperature: { min: 0.0,  max: 100.0 },
   };
+
+  // MQTT
+  private mqttClient!: mqtt.MqttClient;
+
+  // Kafka
+  private kafka!: Kafka;
+  private producer!: Producer;
 
   private intervals: NodeJS.Timeout[] = [];
 
-  onModuleInit() {
-    this.client = mqtt.connect(this.MQTT_BROKER);
+  async onModuleInit() {
+    if (this.BROKER_TYPE === 'mqtt') {
+      await this.initMqtt();
+    } else {
+      await this.initKafka();
+    }
+  }
 
-    this.client.on('connect', () => {
-      this.logger.log(`Povezan na MQTT broker: ${this.MQTT_BROKER}`);
+  // ─── MQTT ───────────────────────────────────────────
+  private initMqtt() {
+    this.mqttClient = mqtt.connect(this.MQTT_BROKER);
+
+    this.mqttClient.on('connect', () => {
+      this.logger.log(`[MQTT] Povezan na broker: ${this.MQTT_BROKER}`);
       this.startDevices();
     });
 
-    this.client.on('error', (err) => {
-      this.logger.error(`MQTT greska: ${err.message}`);
+    this.mqttClient.on('error', (err) => {
+      this.logger.error(`[MQTT] Greška: ${err.message}`);
     });
   }
 
+  private publishMqtt(payload: SensorPayload) {
+    this.mqttClient.publish(this.TOPIC, JSON.stringify(payload));
+  }
+
+  // ─── KAFKA ──────────────────────────────────────────
+  private async initKafka() {
+    this.kafka = new Kafka({
+      clientId: 'data-ingestion',
+      brokers: [this.KAFKA_BROKER],
+    });
+
+    this.producer = this.kafka.producer();
+    await this.producer.connect();
+    this.logger.log(`[Kafka] Povezan na broker: ${this.KAFKA_BROKER}`);
+    this.startDevices();
+  }
+
+  private async publishKafka(payload: SensorPayload) {
+    await this.producer.send({
+      topic: this.TOPIC,
+      messages: [{ value: JSON.stringify(payload) }],
+    });
+  }
+
+  // ─── ZAJEDNIČKA LOGIKA ───────────────────────────────
   private startDevices() {
-    this.logger.log(`Pokretanje ${this.DEVICE_COUNT} uređaja...`);
+    this.logger.log(`Pokretanje ${this.DEVICE_COUNT} uređaja [${this.BROKER_TYPE.toUpperCase()}]...`);
 
     for (let i = 1; i <= this.DEVICE_COUNT; i++) {
       const deviceId = `sensor-${String(i).padStart(3, '0')}`;
 
-      const interval = setInterval(() => {
+      const interval = setInterval(async () => {
         const payload = this.generatePayload(deviceId);
-        this.client.publish(this.TOPIC, JSON.stringify(payload));
+
+        if (this.BROKER_TYPE === 'mqtt') {
+          this.publishMqtt(payload);
+        } else {
+          await this.publishKafka(payload);
+        }
       }, this.INTERVAL_MS);
 
       this.intervals.push(interval);
     }
 
-    this.logger.log(`Svi uređaji aktivni - salju na topic: ${this.TOPIC}`);
+    this.logger.log(`Svi uređaji aktivni – topic: ${this.TOPIC}`);
   }
 
-  private generatePayload(deviceId: string) {
+  private generatePayload(deviceId: string): SensorPayload {
     return {
       deviceId,
       timestamp: Date.now(),
@@ -66,9 +126,15 @@ export class IngestionService implements OnModuleInit, OnModuleDestroy {
     return parseFloat((Math.random() * (max - min) + min).toFixed(4));
   }
 
-  onModuleDestroy() {
+  async onModuleDestroy() {
     this.intervals.forEach(clearInterval);
-    this.client.end();
+
+    if (this.BROKER_TYPE === 'mqtt') {
+      this.mqttClient.end();
+    } else {
+      await this.producer.disconnect();
+    }
+
     this.logger.log('Ingestion servis zaustavljen.');
   }
 }
