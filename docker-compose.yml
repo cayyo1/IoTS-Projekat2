@@ -17,6 +17,13 @@ services:
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
       - ./db/seed.sql:/docker-entrypoint-initdb.d/seed.sql
       - ./data:/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      
   mqtt:
     image: eclipse-mosquitto
     container_name: iot-mqtt

@@ -23,7 +23,8 @@ export class IngestionService implements OnModuleInit, OnModuleDestroy {
 
   private readonly MQTT_BROKER = process.env.MQTT_BROKER || 'mqtt://localhost:1883';
   private readonly KAFKA_BROKER = process.env.KAFKA_BROKER || 'localhost:9093';
-  private readonly TOPIC = 'iot/sensors';
+  private readonly MQTT_TOPIC = 'iot/sensors';
+  private readonly KAFKA_TOPIC = 'iot.sensors'; // Kafka topic ne moze sadrzati '/'
 
   private readonly RANGES = {
     co:          { min: 0.00, max: 0.02  },
@@ -64,7 +65,7 @@ export class IngestionService implements OnModuleInit, OnModuleDestroy {
   }
 
   private publishMqtt(payload: SensorPayload) {
-    this.mqttClient.publish(this.TOPIC, JSON.stringify(payload));
+    this.mqttClient.publish(this.MQTT_TOPIC, JSON.stringify(payload));
   }
 
   // ─── KAFKA ──────────────────────────────────────────
@@ -82,7 +83,7 @@ export class IngestionService implements OnModuleInit, OnModuleDestroy {
 
   private async publishKafka(payload: SensorPayload) {
     await this.producer.send({
-      topic: this.TOPIC,
+      topic: this.KAFKA_TOPIC,
       messages: [{ value: JSON.stringify(payload) }],
     });
   }
@@ -107,7 +108,8 @@ export class IngestionService implements OnModuleInit, OnModuleDestroy {
       this.intervals.push(interval);
     }
 
-    this.logger.log(`Svi uređaji aktivni – topic: ${this.TOPIC}`);
+    const topic = this.BROKER_TYPE === 'mqtt' ? this.MQTT_TOPIC : this.KAFKA_TOPIC;
+    this.logger.log(`Svi uređaji aktivni – topic: ${topic}`);
   }
 
   private generatePayload(deviceId: string): SensorPayload {

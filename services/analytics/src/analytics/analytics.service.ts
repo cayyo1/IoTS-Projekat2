@@ -21,7 +21,8 @@ export class AnalyticsService implements OnModuleInit, OnModuleDestroy {
 
   private readonly MQTT_BROKER = process.env.MQTT_BROKER || 'mqtt://localhost:1883';
   private readonly KAFKA_BROKER = process.env.KAFKA_BROKER || 'localhost:9093';
-  private readonly TOPIC = 'iot/sensors';
+  private readonly MQTT_TOPIC = 'iot/sensors';
+  private readonly KAFKA_TOPIC = 'iot.sensors';
   private readonly WINDOW_MS = 10000;
   private readonly TEMP_THRESHOLD = 50;
 
@@ -51,7 +52,7 @@ export class AnalyticsService implements OnModuleInit, OnModuleDestroy {
 
     this.mqttClient.on('connect', () => {
       this.logger.log(`[MQTT] Povezan na broker: ${this.MQTT_BROKER}`);
-      this.mqttClient.subscribe(this.TOPIC);
+      this.mqttClient.subscribe(this.MQTT_TOPIC);
     });
 
     this.mqttClient.on('message', (topic, message) => {
@@ -72,7 +73,7 @@ export class AnalyticsService implements OnModuleInit, OnModuleDestroy {
 
     this.consumer = this.kafka.consumer({ groupId: 'analytics-group' });
     await this.consumer.connect();
-    await this.consumer.subscribe({ topic: this.TOPIC, fromBeginning: false });
+    await this.consumer.subscribe({ topic: this.KAFKA_TOPIC, fromBeginning: false });
 
     this.logger.log(`[Kafka] Povezan na broker: ${this.KAFKA_BROKER}`);
 

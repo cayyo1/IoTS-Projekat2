@@ -15,10 +15,8 @@ switch (brokerMode)
         break;
 
     case "kafka":
-        // TODO: implement once the Kafka broker is added to docker-compose.
-        // builder.Services.AddSingleton<IMessageConsumer, KafkaConsumer>();
-        throw new NotSupportedException(
-            "Kafka mode is not implemented yet. Set Broker:Mode=mqtt for now.");
+        builder.Services.AddSingleton<IMessageConsumer, KafkaConsumer>();
+        break;
 
     default:
         throw new InvalidOperationException($"Unknown Broker:Mode '{brokerMode}'. Use 'mqtt' or 'kafka'.");
