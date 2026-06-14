@@ -16,8 +16,8 @@ interface SensorPayload {
 export class AnalyticsService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(AnalyticsService.name);
 
-  // ⚙️ Menjaj ovde
-  private readonly BROKER_TYPE: string = 'kafka'; // 'mqtt' ili 'kafka'
+
+  private readonly BROKER_TYPE: string = process.env.BROKER_TYPE || 'mqtt';
 
   private readonly MQTT_BROKER = process.env.MQTT_BROKER || 'mqtt://localhost:1883';
   private readonly KAFKA_BROKER = process.env.KAFKA_BROKER || 'localhost:9093';

@@ -16,7 +16,7 @@ interface SensorPayload {
 export class IngestionService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(IngestionService.name);
 
-  private readonly BROKER_TYPE: string = 'kafka'; // 'mqtt' ili 'kafka'
+  private readonly BROKER_TYPE: string = process.env.BROKER_TYPE || 'mqtt';
 
   private readonly DEVICE_COUNT = 3;
   private readonly INTERVAL_MS = 2000;
