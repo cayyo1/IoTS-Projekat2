@@ -27,6 +27,8 @@ export class IngestionService implements OnModuleInit, OnModuleDestroy {
   private readonly KAFKA_TOPIC = 'iot.sensors'; 
   private readonly KAFKA_ACKS = parseInt(process.env.KAFKA_ACKS || '1') as 0 | 1 | -1; 
 
+  private readonly MQTT_QOS = parseInt(process.env.MQTT_QOS || '1') as 0 | 1 | 2;
+
   private readonly RANGES = {
     co:          { min: 0.00, max: 0.02  },
     humidity:    { min: 0.0,  max: 100.0 },
@@ -66,7 +68,7 @@ export class IngestionService implements OnModuleInit, OnModuleDestroy {
   }
 
   private publishMqtt(payload: SensorPayload) {
-    this.mqttClient.publish(this.MQTT_TOPIC, JSON.stringify(payload));
+    this.mqttClient.publish(this.MQTT_TOPIC, JSON.stringify(payload), { qos: this.MQTT_QOS });
   }
 
   // ─── KAFKA ──────────────────────────────────────────

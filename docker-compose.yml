@@ -64,6 +64,7 @@ services:
       KAFKA_BROKER: iot-kafka:9092
       BROKER_TYPE: kafka        # ⚙️ menjaj ovde: 'mqtt' ili 'kafka'
       KAFKA_ACKS: "0"   # ⚙️ menjaj: 0, 1, -1 (all)
+      MQTT_QOS: "1"   # ⚙️ menjaj: 0, 1, 2
 
   analytics:
     build:
