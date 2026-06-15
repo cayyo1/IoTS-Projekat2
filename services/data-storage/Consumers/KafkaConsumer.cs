@@ -4,22 +4,6 @@ using Microsoft.Extensions.Logging;
 
 namespace DataStorage.Consumers;
 
-/// <summary>
-/// Consumes sensor readings from the Kafka topic published by the
-/// Data Ingestion service (when BROKER_TYPE=kafka) and forwards every
-/// message (raw JSON string) to the caller.
-///
-/// Configuration (appsettings.json / environment variables):
-///   Broker__Kafka__BootstrapServers  (default: "iot-kafka:9092")
-///   Broker__Kafka__Topic             (default: "iot/sensors")
-///   Broker__Kafka__GroupId           (default: "data-storage-group")
-///   Broker__Kafka__AutoOffsetReset   (default: "earliest")  -> earliest | latest
-///
-/// Consumer group "data-storage-group" is separate from "analytics-group"
-/// used by the Analytics service, so each service tracks its own offsets
-/// (and Consumer Lag can be inspected per group with
-/// kafka-consumer-groups.sh --describe --group data-storage-group).
-/// </summary>
 public class KafkaConsumer : IMessageConsumer
 {
     private readonly ILogger<KafkaConsumer> _logger;
@@ -67,8 +51,6 @@ public class KafkaConsumer : IMessageConsumer
 
         _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-        // IConsumer<>.Consume(...) is a blocking call, so the consume loop
-        // runs on its own background task rather than on the Worker's loop.
         _consumeTask = Task.Run(async () =>
         {
             while (!_cts.Token.IsCancellationRequested)

@@ -62,9 +62,11 @@ services:
     environment:
       MQTT_BROKER: mqtt://iot-mqtt:1883
       KAFKA_BROKER: iot-kafka:9092
-      BROKER_TYPE: kafka        # ⚙️ menjaj ovde: 'mqtt' ili 'kafka'
-      KAFKA_ACKS: "0"   # ⚙️ menjaj: 0, 1, -1 (all)
-      MQTT_QOS: "1"   # ⚙️ menjaj: 0, 1, 2
+      BROKER_TYPE: kafka        #  ovde: 'mqtt' ili 'kafka'
+      KAFKA_ACKS: "1"   #  menjaj: 0, 1, -1 (all)
+      MQTT_QOS: "2"   #  menjaj: 0, 1, 2
+      DEVICE_COUNT: "100"     #  menjaj: 100 / 1000 / 10000 za Scenario A, ili naglo za Scenario C
+      INTERVAL_MS: "2000"   # ms između poruka po uređaju
 
   analytics:
     build:
@@ -78,7 +80,7 @@ services:
     environment:
       MQTT_BROKER: mqtt://iot-mqtt:1883
       KAFKA_BROKER: iot-kafka:9092
-      BROKER_TYPE: kafka        # ⚙️ menjaj ovde: 'mqtt' ili 'kafka'
+      BROKER_TYPE: kafka        #ovde: 'mqtt' ili 'kafka'
 
   data-storage:
     build:
@@ -94,7 +96,7 @@ services:
       kafka:
         condition: service_started
     environment:
-      # ⚙️ MENJAJ OVDE: 'mqtt' ili 'kafka'
+      #OVDE: 'mqtt' ili 'kafka'
       Broker__Mode: kafka
 
       # MQTT konfiguracija

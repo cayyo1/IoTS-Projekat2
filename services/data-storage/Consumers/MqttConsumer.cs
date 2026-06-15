@@ -5,17 +5,6 @@ using MQTTnet.Client;
 
 namespace DataStorage.Consumers;
 
-/// <summary>
-/// Subscribes to the MQTT topic published by the Data Ingestion service
-/// and forwards every received message (as a raw JSON string) to the caller.
-///
-/// Configuration (appsettings.json / environment variables):
-///   Broker__Mqtt__Host       (default: "mqtt")
-///   Broker__Mqtt__Port       (default: 1883)
-///   Broker__Mqtt__Topic      (default: "iot/sensors")
-///   Broker__Mqtt__ClientId   (default: "data-storage-service")
-///   Broker__Mqtt__QoS        (default: 1)  -> 0, 1 or 2
-/// </summary>
 public class MqttConsumer : IMessageConsumer
 {
     private readonly ILogger<MqttConsumer> _logger;
@@ -44,8 +33,6 @@ public class MqttConsumer : IMessageConsumer
         var factory = new MqttFactory();
         _client = factory.CreateMqttClient();
 
-        // CleanSession = false so that, for QoS 1/2, the broker queues messages
-        // for this client while it is disconnected (relevant for Scenario B).
         _options = new MqttClientOptionsBuilder()
             .WithTcpServer(host, port)
             .WithClientId(clientId)

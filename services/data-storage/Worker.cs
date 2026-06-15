@@ -6,19 +6,7 @@ using DataStorage.Models;
 
 namespace DataStorage;
 
-/// <summary>
-/// Background service that:
-///  1. Starts the configured <see cref="IMessageConsumer"/> (MQTT for now, Kafka later).
-///  2. Pushes every received message into an in-memory channel.
-///  3. Batches readings and flushes them to PostgreSQL either when the
-///     batch reaches <c>Batching:BatchSize</c> (default 500) or when
-///     <c>Batching:FlushIntervalSeconds</c> elapses (default 5s),
-///     whichever comes first.
-///
-/// For the high-intensity stress scenarios (A and C), set
-/// <c>Batching:DisableWrites=true</c> to skip database writes entirely
-/// so the I/O subsystem doesn't become the bottleneck instead of the broker.
-/// </summary>
+
 public class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
@@ -130,19 +118,17 @@ public class Worker : BackgroundService
             buffer.Clear();
             return;
         }
-
+        
         try
         {
             await _repository.BulkInsertAsync(buffer, cancellationToken);
             _logger.LogInformation("Flushed {Count} readings to sensor_data", count);
+            buffer.Clear();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to flush {Count} readings to database", count);
-        }
-        finally
-        {
-            buffer.Clear();
+            _logger.LogError(ex, "Failed to flush {Count} readings to database - retry sledeci put", count);
+            // bafer se NE brise - pokusavamo ponovo na sledecem flush-u
         }
     }
 }

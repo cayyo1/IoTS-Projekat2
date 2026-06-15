@@ -6,16 +6,6 @@ using DataStorage.Models;
 
 namespace DataStorage.Data;
 
-/// <summary>
-/// Handles writing batches of <see cref="SensorReading"/> into the
-/// "sensor_data" table using PostgreSQL's binary COPY protocol,
-/// which is significantly faster than individual INSERT statements
-/// for the high-throughput stress scenarios (A and C).
-///
-/// Table schema (db/init.sql):
-///   sensor_data(id BIGSERIAL PK, device_id, timestamp, co, humidity,
-///                light, smoke, temperature, received_at default now())
-/// </summary>
 public class SensorDataRepository
 {
     private readonly string _connectionString;

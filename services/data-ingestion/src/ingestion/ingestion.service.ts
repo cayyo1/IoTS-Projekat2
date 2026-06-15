@@ -18,8 +18,8 @@ export class IngestionService implements OnModuleInit, OnModuleDestroy {
 
   private readonly BROKER_TYPE: string = process.env.BROKER_TYPE || 'mqtt';
 
-  private readonly DEVICE_COUNT = 3;
-  private readonly INTERVAL_MS = 2000;
+  private readonly DEVICE_COUNT = parseInt(process.env.DEVICE_COUNT || '3');
+  private readonly INTERVAL_MS = parseInt(process.env.INTERVAL_MS || '2000');
 
   private readonly MQTT_BROKER = process.env.MQTT_BROKER || 'mqtt://localhost:1883';
   private readonly KAFKA_BROKER = process.env.KAFKA_BROKER || 'localhost:9093';
@@ -53,7 +53,7 @@ export class IngestionService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  // ─── MQTT ───────────────────────────────────────────
+  //=MQTT
   private initMqtt() {
     this.mqttClient = mqtt.connect(this.MQTT_BROKER);
 
@@ -71,7 +71,7 @@ export class IngestionService implements OnModuleInit, OnModuleDestroy {
     this.mqttClient.publish(this.MQTT_TOPIC, JSON.stringify(payload), { qos: this.MQTT_QOS });
   }
 
-  // ─── KAFKA ──────────────────────────────────────────
+  //=====KAFKA
 
   private async initKafka() {
     this.kafka = new Kafka({
@@ -96,7 +96,7 @@ export class IngestionService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
-  // ─── ZAJEDNIČKA LOGIKA ───────────────────────────────
+
   private startDevices() {
     this.logger.log(`Pokretanje ${this.DEVICE_COUNT} uređaja [${this.BROKER_TYPE.toUpperCase()}]...`);
 

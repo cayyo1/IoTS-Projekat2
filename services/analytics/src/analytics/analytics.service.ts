@@ -46,7 +46,7 @@ export class AnalyticsService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  // ─── MQTT ───────────────────────────────────────────
+  //mqtt
   private initMqtt() {
     this.mqttClient = mqtt.connect(this.MQTT_BROKER);
 
@@ -64,7 +64,7 @@ export class AnalyticsService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
-  // ─── KAFKA ──────────────────────────────────────────
+  //kafka
   private async initKafka() {
     this.kafka = new Kafka({
       clientId: 'analytics',
@@ -86,7 +86,7 @@ export class AnalyticsService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
-  // ─── ZAJEDNIČKA LOGIKA ───────────────────────────────
+
   private handleMessage(raw: string) {
     try {
       const payload: SensorPayload = JSON.parse(raw);
